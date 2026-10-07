@@ -53,13 +53,13 @@ mkdir demo-docker-build
 cd demo-docker-build
 
 # Download the Application Source
-wget https://github.com/aws-containers/retail-store-sample-app/archive/refs/tags/v1.2.4.zip
+wget https://github.com/aws-containers/retail-store-sample-app/archive/refs/tags/v1.6.3.zip
 
 # Unzip Application Source
-unzip v1.2.4.zip
+unzip v1.6.3.zip
 
 # Make change to file
-cd /home/ec2-user/demo-docker-build/retail-store-sample-app-1.2.4/src/ui/src/main/resources/templates
+cd /home/ec2-user/demo-docker-build/retail-store-sample-app-1.6.3/src/ui/src/main/resources/templates
 File name: home.html
 We are making a change for UI stating V2 at line 
 
@@ -89,7 +89,7 @@ grep 'Secret Shop' home.html
 - For now focus is on Build Docker Image, Push to Docker Hub is the scope of this demo.
 ```bash
 # Change Directory to UI Source folder
-cd /home/ec2-user/demo-docker-build/retail-store-sample-app-1.2.4/src/ui
+cd /home/ec2-user/demo-docker-build/retail-store-sample-app-1.6.3/src/ui
 cat Dockerfile
 ```
 ### Dockerfile for UI Microservice
@@ -170,7 +170,7 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
 
 ```bash
 # Change to the directory containing your Dockerfile
-cd /home/ec2-user/demo-docker-build/retail-store-sample-app-1.2.4/src/ui
+cd /home/ec2-user/demo-docker-build/retail-store-sample-app-1.6.3/src/ui
 
 # Verify Dockerfile before starting the build
 ls -lrt Dockerfile
