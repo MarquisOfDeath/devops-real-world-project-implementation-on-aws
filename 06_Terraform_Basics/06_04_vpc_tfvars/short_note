@@ -1,0 +1,37 @@
+1.
+In "variables.tf" file:
+    variable "environment_name" {
+      description = "Environment name used in resource names and tags"
+      type        = string
+      default     = "dev"
+    }
+terraform plan
+
+2.
+In your shell:
+    export TF_VAR_environment_name="develop1"
+terraform plan
+
+3.
+In "terraform.tfvars" file:
+    environment_name = "develop2"
+terraform plan
+
+4.
+In "dev3.auto.tfvars" file:
+    environment_name = "develop3"
+terraform plan
+
+5.
+In "haha.auto.tfvars" file:
+    environment_name = "develop4"
+terraform plan
+
+6.
+terraform plan -var=environment_name="develop5"
+
+7.
+In "random_var_file" file:
+    environment_name = "develop6"
+terraform plan -var=environment_name="develop5" -var-file=random_var_file
+
