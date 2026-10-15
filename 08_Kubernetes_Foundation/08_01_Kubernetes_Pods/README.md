@@ -21,6 +21,18 @@ This marks the beginning of our Kubernetes journey — starting simple, focusing
 
 ## Step-01: Review the Pod Manifest
 
+Generate a base blueprint of your desired pod by running below command:
+
+```bash
+kubectl run catalog-pod \
+  --image=public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0 \
+  --labels="app=catalog" \
+  --port=8080 \
+  --dry-run=client -o yaml > 01_catalog_pod.yaml
+```
+
+Then modify it like below:
+
 **File:** `01_catalog_pod.yaml`
 
 ```yaml
