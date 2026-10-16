@@ -38,55 +38,70 @@ A **Deployment** in Kubernetes:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: catalog
+  name: catalog-deployment
+  namespace: default
   labels:
-    app.kubernetes.io/name: catalog
+    app: catalog
+    env: dev
+    createdBy: MarquisOfDeath
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
-    rollingUpdate:
-      maxUnavailable: 1
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
-      app.kubernetes.io/name: catalog
+      app: catalog
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: catalog
+        app: catalog
+        env: dev
+        createdBy: MarquisOfDeath
     spec:
       securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
         fsGroup: 1000
       containers:
-        - name: catalog
-          securityContext:
-            capabilities:
-              drop:
-              - ALL
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
-          image: "public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0"
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-          resources:
-            limits:
-              cpu: 200m
-              memory: 256Mi
-            requests:
-              cpu: 100m
-              memory: 256Mi
+      - image: public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0
+        imagePullPolicy: IfNotPresent
+        name: catalog-pod-container
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: 80m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
 ```
 
 ---
@@ -149,7 +164,7 @@ kubectl get pods -o wide
 Check rollout status:
 
 ```bash
-kubectl rollout status deployment/catalog
+kubectl rollout status deployment/catalog-deployment
 ```
 
 Describe the Pod to view probes and security context:
@@ -163,7 +178,7 @@ kubectl describe pod <pod-name>
 ## Step-03: Access the Application via Port Forwarding
 ```
 # Expose the Pod locally using:
-kubectl port-forward deploy/catalog 7080:8080 >/dev/null 2>&1 &
+kubectl port-forward deployment/catalog-deployment 7080:8080 >/dev/null 2>&1 &
 
 # Topology Endpoint
 http://localhost:7080/topology
@@ -192,7 +207,7 @@ http://localhost:7080/catalog/tags
 ### Scale Up (1 → 3 replicas)
 
 ```bash
-kubectl scale deployment catalog --replicas=3
+kubectl scale deployment catalog-deployment --replicas=3
 ```
 
 Check:
@@ -206,7 +221,7 @@ You should now see **3 running Pods**.
 ### Scale Down (3 → 1 replica)
 
 ```bash
-kubectl scale deployment catalog --replicas=1
+kubectl scale deployment catalog-deployment --replicas=1
 ```
 
 Check again:
@@ -225,26 +240,26 @@ Kubernetes terminates extra Pods gracefully.
 We’ll now simulate a **version upgrade** from `1.0.0` to `1.3.0`.
 
 ```bash
-kubectl scale deployment catalog --replicas=3
+kubectl scale deployment catalog-deployment --replicas=3
 ```
 
 ### Update the Deployment image
 
 ```bash
 # List Deployment Revisions
-kubectl rollout history deployment/catalog
+kubectl rollout history deployment/catalog-deployment
 
 # Update the Deployment
-kubectl set image deployment/catalog catalog=public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0
+kubectl set image deployment/catalog-deployment catalog=public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0
 
 # List Deployment Revisions
-kubectl rollout history deployment/catalog
+kubectl rollout history deployment/catalog-deployment
 ```
 
 Verify rollout status:
 
 ```bash
-kubectl rollout status deployment/catalog
+kubectl rollout status deployment/catalog-deployment
 ```
 
 You’ll see Pods being updated **one by one** (rolling update).
@@ -263,29 +278,29 @@ If something goes wrong, roll back easily:
 
 ```bash
 # Rollback to previous version
-kubectl rollout undo deployment/catalog
+kubectl rollout undo deployment/catalog-deployment
 
 # List Deployment Revisions
-kubectl rollout history deployment/catalog
+kubectl rollout history deployment/catalog-deployment
 ```
 
 or rollback to a specific revision:
 
 ```bash
 # List Deployment Revisions
-kubectl rollout history deployment/catalog
+kubectl rollout history deployment/catalog-deployment
 
 # rollback to a specific revision
-kubectl rollout undo deployment/catalog --to-revision=<X>
+kubectl rollout undo deployment/catalog-deployment --to-revision=<X>
 
 # List Deployment Revisions
-kubectl rollout history deployment/catalog
+kubectl rollout history deployment/catalog-deployment
 ```
 
 Check the version after rollback:
 
 ```bash
-kubectl describe deployment catalog | grep Image
+kubectl describe deployment catalog-deployment | grep Image
 ```
 
 ---
@@ -293,7 +308,7 @@ kubectl describe deployment catalog | grep Image
 ## Step-07: Cleanup
 
 ```bash
-kubectl delete deployment catalog
+kubectl delete deployment catalog-deployment
 ```
 
 ---
