@@ -39,28 +39,33 @@ Then modify it like below:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: catalog-pod
   labels:
     app: catalog
+    env: dev
+    createdBy: MarquisOfDeath
+  name: catalog-pod
+  namespace: default
 spec:
   containers:
-    - name: catalog
-      image: "public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0"
-      ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
-      resources:
-        requests: 
-          cpu: "100m"
-          memory: "128Mi" 
-        limits:   
-          cpu: "250m"
-          memory: "256Mi"
-      readinessProbe:
-        httpGet:
-          path: /health
-          port: 8080
+  - image: public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0
+    name: catalog-pod-container
+    ports:
+    - name: http
+      protocol: TCP
+      containerPort: 8080
+    resources:
+      requests:
+        cpu: 80m
+        memory: 100Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 8080
+  restartPolicy: Always
+
 ```
 
 ---
