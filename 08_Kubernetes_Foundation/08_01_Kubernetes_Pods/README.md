@@ -138,6 +138,18 @@ These logs confirm that:
 # Expose the Pod locally using:
 kubectl port-forward pod/catalog-pod 7080:8080
 
+or-----------
+
+kubectl port-forward pod/catalog-pod 7080:8080 >/dev/null 2>&1 &
+
+#To stop it later:
+pgrep -f "port-forward pod/catalog-pod"
+
+# Or kill it directly
+pkill -f "port-forward pod/catalog-pod"
+
+====================
+
 # Topology Endpoint
 http://localhost:7080/topology
 
