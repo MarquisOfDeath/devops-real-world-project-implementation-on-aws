@@ -3,8 +3,8 @@
 ### **Step-01: Verify existing Deployment**
 
 ```bash
-kubectl get deploy catalog
-kubectl get pods -l app.kubernetes.io/name=catalog
+kubectl get deploy catalog-deployment
+kubectl get pods -l app=catalog
 ```
 
 Ensure 3 replicas are running.
@@ -20,17 +20,29 @@ apiVersion: v1
 kind: Service
 metadata:
   name: catalog-service
+  namespace: default
   labels:
-    app.kubernetes.io/name: catalog
+    app: catalog
+    env: dev
+    createdBy: MarquisOfDeath
 spec:
   type: ClusterIP
+
+  # Selector MUST match the Pod template labels exactly
   selector:
-    app.kubernetes.io/name: catalog
+    app: catalog
+
   ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
+  - name: http # Named port for clean Ingress mapping
+    protocol: TCP
+    port: 80 # Standard web traffic entry port for other apps in the cluster
+    targetPort: http # References the named containerPort "http" (8080) from your deployment. 
+    # "http" will work only if you have explicitly given the name "http" to the containerPort inside your Deployment's template.
+
+    # Production Traffic & Reliability Controls
+  sessionAffinity: None # Ensures standard, even round-robin load balancing across replicas
+  internalTrafficPolicy: Cluster # Normal routing to all ready endpoints across the cluster
+
 ```
 
 ---
@@ -58,7 +70,7 @@ After creating the service, verify how Kubernetes automatically links **Pods to 
 
 ```bash
 kubectl get pods -o wide
-kubectl get endpointslices -l kubernetes.io/service-name=catalog-service
+kubectl get endpointslices -l kubernetes.io/service-name=catalog
 ```
 
 You should see something like:
@@ -87,7 +99,7 @@ kubectl run test --image=curlimages/curl -it --rm -- sh
 Inside the pod:
 
 ```bash
-curl http://catalog-service:8080/topology
+curl http://catalog-service:80/topology
 ```
 
 Expected output:
@@ -127,7 +139,7 @@ catalog-service.default.svc.cluster.local
 ```bash
 # Delete k8s Resources
 kubectl delete svc catalog-service
-kubectl delete deploy catalog
+kubectl delete deploy catalog-deployment
 
 ### OR ###
 
