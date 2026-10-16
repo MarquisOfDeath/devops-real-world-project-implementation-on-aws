@@ -134,7 +134,32 @@ catalog-service.default.svc.cluster.local
 
 ---
 
-## Step-07: Clean Up 
+## Step-07: Access the Application via Port Forwarding
+```
+# Expose the Pod locally using:
+kubectl port-forward service/catalog-service 7080:80 >/dev/null 2>&1 &
+
+# Topology Endpoint
+http://localhost:7080/topology
+
+# Health Endpoint
+http://localhost:7080/health
+
+# Catalog - Get Products
+http://localhost:7080/catalog/products
+
+# Catalog - Get Products By ID
+http://localhost:7080/catalog/products/d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49
+
+# Catalog - Get Size
+http://localhost:7080/catalog/size
+
+# Catalog - Get Tags
+http://localhost:7080/catalog/tags
+```
+
+
+## Step-08: Clean Up 
 
 ```bash
 # Delete k8s Resources
