@@ -163,7 +163,7 @@ kubectl describe pod <pod-name>
 ## Step-03: Access the Application via Port Forwarding
 ```
 # Expose the Pod locally using:
-kubectl port-forward deploy/catalog 7080:8080
+kubectl port-forward deploy/catalog 7080:8080 >/dev/null 2>&1 &
 
 # Topology Endpoint
 http://localhost:7080/topology
