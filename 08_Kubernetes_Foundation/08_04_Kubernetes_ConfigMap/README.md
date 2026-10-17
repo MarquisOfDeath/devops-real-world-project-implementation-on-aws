@@ -81,18 +81,21 @@ shaktiswarupmohanty@Shakti-MacBook-Air configmap %
 Once the pod is running, verify environment variables inside the container:
 
 ```bash
-kubectl exec -it <catalog-pod-name> -- env
+kubectl exec -it <catalog-pod-name> -- env | grep -iE "RETAIL|CREATOR"
 ```
 
 You should see all environment variables from the ConfigMap:
 
 ```
-RETAIL_CATALOG_PERSISTENCE_PROVIDER=in-memory
-RETAIL_CATALOG_PERSISTENCE_DB_NAME=catalogdb
-RETAIL_CATALOG_PERSISTENCE_USER=catalog_user
-RETAIL_CATALOG_PERSISTENCE_CONNECT_TIMEOUT=5
-RETAIL_CATALOG_PERSISTENCE_ENDPOINT=
+shaktiswarupmohanty@Shakti-MacBook-Air configmap % kubectl exec catalog-987d49fd8-29cq5 -it -- env | grep -iE "RETAIL|CREATOR"
 RETAIL_CATALOG_PERSISTENCE_PASSWORD=
+RETAIL_CATALOG_PERSISTENCE_PROVIDER=in-memory
+RETAIL_CATALOG_PERSISTENCE_USER=catalog_user
+MY_CREATOR=MarquisOfDeath
+RETAIL_CATALOG_PERSISTENCE_CONNECT_TIMEOUT=5
+RETAIL_CATALOG_PERSISTENCE_DB_NAME=catalogdb
+RETAIL_CATALOG_PERSISTENCE_ENDPOINT=
+shaktiswarupmohanty@Shakti-MacBook-Air configmap % 
 ```
 ===============
 ```bash
