@@ -58,7 +58,7 @@ Under the container section, add:
 kubectl apply -f catalog_k8s_manifests/
 ```
 ==================
-
+```bash
 shaktiswarupmohanty@Shakti-MacBook-Air configmap % kubectl get all -o wide                         
 NAME                          READY   STATUS    RESTARTS   AGE    IP            NODE                                         NOMINATED NODE   READINESS GATES
 pod/catalog-987d49fd8-29cq5   1/1     Running   0          116s   10.0.10.230   ip-10-0-10-151.ap-south-1.compute.internal   <none>           <none>
@@ -75,7 +75,7 @@ deployment.apps/catalog   3/3     3            3           117s   catalog-pod-co
 NAME                                DESIRED   CURRENT   READY   AGE    CONTAINERS              IMAGES                                                            SELECTOR
 replicaset.apps/catalog-987d49fd8   3         3         3       117s   catalog-pod-container   public.ecr.aws/aws-containers/retail-store-sample-catalog:1.3.0   app.kubernetes.io/name=catalog,pod-template-hash=987d49fd8
 shaktiswarupmohanty@Shakti-MacBook-Air configmap % 
-
+```
 ==============
 
 Once the pod is running, verify environment variables inside the container:
@@ -95,14 +95,14 @@ RETAIL_CATALOG_PERSISTENCE_ENDPOINT=
 RETAIL_CATALOG_PERSISTENCE_PASSWORD=
 ```
 ===============
-
+```bash
 shaktiswarupmohanty@Shakti-MacBook-Air configmap % kubectl port-forward service/catalog-service 6090:8080
 Forwarding from 127.0.0.1:6090 -> 8080
 Forwarding from [::1]:6090 -> 8080
 Handling connection for 6090
 Handling connection for 6090
 Handling connection for 6090
-
+```
 ================
 
 ---
