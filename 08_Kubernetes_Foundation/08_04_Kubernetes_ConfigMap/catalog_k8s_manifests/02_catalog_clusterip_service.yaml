@@ -2,15 +2,23 @@ apiVersion: v1
 kind: Service
 metadata:
   name: catalog-service
+  namespace: default
   labels:
     app.kubernetes.io/name: catalog
 spec:
   type: ClusterIP
+
+  # Selector MUST match the Pod template labels exactly
   selector:
     app.kubernetes.io/name: catalog
-  ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
 
+  ports:
+  - name: http # Named port for clean Ingress mapping
+    protocol: TCP
+    port: 8080 # This is the service port that will be exposed to the cluster. It can be any valid port number.
+    targetPort: http # References the named containerPort "http" (8080) from your deployment. 
+    # "http" will work only if you have explicitly given the name "http" to the containerPort inside your Deployment's template.
+
+    # Production Traffic & Reliability Controls
+  sessionAffinity: None # Ensures standard, even round-robin load balancing across replicas
+  internalTrafficPolicy: Cluster # Normal routing to all ready endpoints across the cluster
