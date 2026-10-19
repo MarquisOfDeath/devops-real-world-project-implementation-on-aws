@@ -4,8 +4,15 @@ metadata:
   name: aws-cli
   namespace: default
 spec:
-  serviceAccountName: aws-cli-sa
+  serviceAccountName: aws-cli-sa # This is the ServiceAccount that we created in the previous step. It allows the pod to assume the IAM role associated with the ServiceAccount.
   containers:
   - name: aws-cli
     image: amazon/aws-cli
-    command: ["sleep", "infinity"]
+    command: [ "sleep", "infinity" ]
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 150m
+        memory: 200Mi
