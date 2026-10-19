@@ -91,9 +91,10 @@ helm version
 ### Step-02-02: Add Helm Repositories
 Add both the Kubernetes CSI Driver and AWS Secrets Provider repositories.
 ```bash
-By default, your local Helm client doesn't know where to find third-party charts. The helm repo add command tells Helm the URL of a specific online store and gives it a nickname on your laptop.
-Think of this like bookmarking your favorite online clothing store.
-• Syntax: helm repo add [NICKNAME] [URL]
+
+## By default, your local Helm client doesn't know where to find third-party charts. The helm repo add command tells Helm the URL of a specific online store and gives it a nickname on your laptop.
+## Think of this like bookmarking your favorite online clothing store.
+# Syntax: helm repo add [NICKNAME] [URL]
 
 # Add Helm Repositories
 helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
