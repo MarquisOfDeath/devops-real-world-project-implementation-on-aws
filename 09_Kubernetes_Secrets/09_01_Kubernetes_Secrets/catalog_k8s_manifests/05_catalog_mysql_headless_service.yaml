@@ -8,11 +8,11 @@ metadata:
     app.kubernetes.io/component: mysql
     app.kubernetes.io/owner: retail-store-sample
 spec:
-  clusterIP: None   # Headless service
+  clusterIP: None # This is a headless service, which means that it does not have a cluster IP and is used to manage the network identity of the pods in the StatefulSet. Headless services are typically used for stateful applications like databases, where each pod needs to be individually addressable.
   ports:
-    - port: 3306
-      targetPort: mysql
-      name: mysql
+  - port: 3306
+    targetPort: mysql # The name of the port in the container spec of the StatefulSet
+    name: mysql
   selector:
     app.kubernetes.io/name: catalog
     app.kubernetes.io/instance: catalog
