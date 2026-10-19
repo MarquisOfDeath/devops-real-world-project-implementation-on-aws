@@ -1,15 +1,18 @@
 apiVersion: apps/v1
 kind: StatefulSet
+
 metadata:
-  name: catalog-mysql
   labels:
     app.kubernetes.io/name: catalog
     app.kubernetes.io/instance: catalog
     app.kubernetes.io/component: mysql
     app.kubernetes.io/owner: retail-store-sample
+  name: catalog-mysql
+
 spec:
+
   replicas: 1
-  serviceName: catalog-mysql
+  serviceName: catalog-mysql ## The name of the Headless Service to which the StatefulSet is associated
   selector:
     matchLabels:
       app.kubernetes.io/name: catalog
@@ -23,40 +26,64 @@ spec:
         app.kubernetes.io/instance: catalog
         app.kubernetes.io/component: mysql
         app.kubernetes.io/owner: retail-store-sample
+
     spec:
-      serviceAccount: catalog-mysql-sa # Service Account    
+      serviceAccountName: catalog-mysql-sa # The name of the ServiceAccount to use for the pod. This should match the name of the ServiceAccount you created in the previous step.
       containers:
-        - name: mysql
-          image: "public.ecr.aws/docker/library/mysql:8.0"
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: mysql
-              containerPort: 3306
-              protocol: TCP          
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: my-secret-pw
-            - name: MYSQL_DATABASE
-              value: catalogdb
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-              export MYSQL_USER=$(cat /mnt/secrets-store/MYSQL_USER);
-              export MYSQL_PASSWORD=$(cat /mnt/secrets-store/MYSQL_PASSWORD);
-              echo "Loaded secrets from AWS Secrets Manager. Starting MySQL with user=$MYSQL_USER";
-              exec docker-entrypoint.sh mysqld          
-          volumeMounts:
-            - name: data
-              mountPath: /var/lib/mysql
-            - name: aws-secrets
-              mountPath: /mnt/secrets-store
-              readOnly: true              
+      - image: public.ecr.aws/docker/library/mysql:8.0
+        name: mysql
+        imagePullPolicy: IfNotPresent
+
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: my-secret-pw
+        - name: MYSQL_DATABASE
+          value: catalogdb
+          ##- name: MYSQL_USER
+          ##valueFrom:
+          ##secretKeyRef:
+          ##name: catalog-db
+          ##key: RETAIL_CATALOG_PERSISTENCE_USER
+          ##- name: MYSQL_PASSWORD
+          ##valueFrom:
+          ##secretKeyRef:
+          ##name: catalog-db
+          ##key: RETAIL_CATALOG_PERSISTENCE_PASSWORD
+        command: [ "/bin/bash", "-c" ]
+        args:
+        - |
+          # Wait for the secrets to be available
+          while [ ! -f /mnt/secrets-store/MYSQL_USER ] || [ ! -f /mnt/secrets-store/MYSQL_PASSWORD ]; do
+            echo "Waiting for secrets to be available..."
+            sleep 2
+          done
+
+          # Read the secrets from the mounted files
+          export MYSQL_USER=$(cat /mnt/secrets-store/MYSQL_USER)
+          export MYSQL_PASSWORD=$(cat /mnt/secrets-store/MYSQL_PASSWORD)
+
+          echo "Loaded secrets from AWS Secrets Manager. Starting MySQL with user=$MYSQL_USER";
+
+          exec docker-entrypoint.sh mysqld       
+
+        ports:
+        - containerPort: 3306
+          name: mysql
+          protocol: TCP
+
+        volumeMounts:
+        - name: catalog-mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        - name: catalog-db-secrets
+          mountPath: "/mnt/secrets-store" # This is the path where the secrets will be mounted inside the container. You can choose any path you like, but it should match the path specified in the SecretProviderClass you created in the previous step.
+          readOnly: true
+
       volumes:
-        - name: data
-          emptyDir: {}
-        - name: aws-secrets
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: "catalog-db-secrets"          
+      - name: catalog-mysql-persistent-storage
+        emptyDir: {} # This is a temporary storage volume that will be deleted when the pod is deleted. In production, you would typically use a PersistentVolumeClaim to provide persistent storage for your database.
+      - name: catalog-db-secrets
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "catalog-db-secrets" # This should match the name of the SecretProviderClass you created in the previous step.
