@@ -60,8 +60,8 @@ Before deploying Kubernetes manifests, create your AWS secret containing MySQL c
 ### Command
 
 ```bash
-# Replace <REGION> with your AWS Region (e.g., us-east-1)
-export AWS_REGION="us-east-1"
+# Replace <REGION> with your AWS Region (e.g., ap-south-1)
+export AWS_REGION="ap-south-1"
 
 # Create Secret 
 aws secretsmanager create-secret \
