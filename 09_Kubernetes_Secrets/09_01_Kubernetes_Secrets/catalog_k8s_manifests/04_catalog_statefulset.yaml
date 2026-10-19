@@ -1,15 +1,18 @@
 apiVersion: apps/v1
 kind: StatefulSet
+
 metadata:
-  name: catalog-mysql
   labels:
     app.kubernetes.io/name: catalog
     app.kubernetes.io/instance: catalog
     app.kubernetes.io/component: mysql
     app.kubernetes.io/owner: retail-store-sample
+  name: catalog-mysql
+
 spec:
+
   replicas: 1
-  serviceName: catalog-mysql
+  serviceName: catalog-mysql ## The name of the Headless Service to which the StatefulSet is associated
   selector:
     matchLabels:
       app.kubernetes.io/name: catalog
@@ -23,33 +26,41 @@ spec:
         app.kubernetes.io/instance: catalog
         app.kubernetes.io/component: mysql
         app.kubernetes.io/owner: retail-store-sample
+
     spec:
+
       containers:
-        - name: mysql
-          image: "public.ecr.aws/docker/library/mysql:8.0"
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: my-secret-pw
-            - name: MYSQL_DATABASE
-              value: catalogdb
-            - name: MYSQL_USER
-              valueFrom:
-                secretKeyRef:
-                  name: catalog-db
-                  key: RETAIL_CATALOG_PERSISTENCE_USER
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: catalog-db
-                  key: RETAIL_CATALOG_PERSISTENCE_PASSWORD
-          ports:
-            - name: mysql
-              containerPort: 3306
-              protocol: TCP
-          volumeMounts:
-            - name: data
-              mountPath: /var/lib/mysql
+      - image: public.ecr.aws/docker/library/mysql:8.0
+        name: mysql
+        imagePullPolicy: IfNotPresent
+
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: my-secret-pw
+        - name: MYSQL_DATABASE
+          value: catalogdb
+        - name: MYSQL_USER
+          #value: catalog_user
+          valueFrom:
+            secretKeyRef:
+              name: catalog-db
+              key: RETAIL_CATALOG_PERSISTENCE_USER
+        - name: MYSQL_PASSWORD
+          #value: kalyandb101
+          valueFrom:
+            secretKeyRef:
+              name: catalog-db
+              key: RETAIL_CATALOG_PERSISTENCE_PASSWORD
+
+        ports:
+        - containerPort: 3306
+          name: mysql
+          protocol: TCP
+
+        volumeMounts:
+        - name: catalog-mysql-persistent-storage
+          mountPath: /var/lib/mysql
+
       volumes:
-        - name: data
-          emptyDir: {}
+      - name: catalog-mysql-persistent-storage
+        emptyDir: {} # This is a temporary storage volume that will be deleted when the pod is deleted. In production, you would typically use a PersistentVolumeClaim to provide persistent storage for your database.
