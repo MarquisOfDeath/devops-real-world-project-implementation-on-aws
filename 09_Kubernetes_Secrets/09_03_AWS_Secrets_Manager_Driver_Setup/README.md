@@ -91,10 +91,22 @@ helm version
 ### Step-02-02: Add Helm Repositories
 Add both the Kubernetes CSI Driver and AWS Secrets Provider repositories.
 ```bash
+By default, your local Helm client doesn't know where to find third-party charts. The helm repo add command tells Helm the URL of a specific online store and gives it a nickname on your laptop.
+Think of this like bookmarking your favorite online clothing store.
+• Syntax: helm repo add [NICKNAME] [URL]
+
 # Add Helm Repositories
 helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
 helm repo add aws-secrets-manager https://aws.github.io/secrets-store-csi-driver-provider-aws
+
+## Now your system knows that whenever you say "secrets-store-csi-driver" or "aws-secrets-manager", it should look at that specific web address.
+
 helm repo update
+
+## The helm repo update command downloads the latest catalog of available charts and versions from all the stores you have added. It syncs your local list with the internet.
+# Think of this like pulling down to refresh the App Store page on your phone to see the newest app updates.
+# You should run this right before searching for or installing an app to make sure you get the latest, safest version.
+
 
 # List Helm Repos
 helm repo list
