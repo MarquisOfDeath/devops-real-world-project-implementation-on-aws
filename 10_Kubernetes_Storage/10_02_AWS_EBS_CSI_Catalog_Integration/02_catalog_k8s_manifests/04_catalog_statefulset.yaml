@@ -72,8 +72,8 @@ spec:
           protocol: TCP
 
         volumeMounts:
-        - name: catalog-mysql-persistent-storage
-          mountPath: /var/lib/mysql
+        #- name: catalog-mysql-persistent-storage
+        #  mountPath: /var/lib/mysql
         - name: catalog-db-secrets
           mountPath: "/mnt/secrets-store" # This is the path where the secrets will be mounted inside the container. You can choose any path you like, but it should match the path specified in the SecretProviderClass you created in the previous step.
           readOnly: true
@@ -87,3 +87,14 @@ spec:
           readOnly: true
           volumeAttributes:
             secretProviderClass: "catalog-db-secrets" # This should match the name of the SecretProviderClass you created in the previous step.
+
+  # Production Improvement: Automated, dynamic AWS EBS provisioning
+  volumeClaimTemplates:
+  - metadata:
+      name: catalog-mysql-persistent-storage # Matches the volumeMounts name in the container
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "ebs-sc" # Directs Kubernetes to use your production-grade StorageClass
+      resources:
+        requests:
+          storage: 10Gi # Adjust size based on your production data footprint
