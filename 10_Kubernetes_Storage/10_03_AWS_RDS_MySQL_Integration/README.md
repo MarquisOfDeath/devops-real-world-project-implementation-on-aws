@@ -90,7 +90,7 @@ This Security Group (`sg-0a110867467e27294` in the example) belongs to your EKS 
 - **Method:** Standard create
 - **Engine:** **MySQL** (8.0)
 - **Templates:** Free tier or Dev/Test
-- **DB instance identifier:** `mydb3`
+- **DB instance identifier:** `mysql-rds-instance01`
 - **Master username:** `mydbadmin`
 - **Master password:** `kalyandb101`
 - **Instance class:** `db.t3.micro`
@@ -115,7 +115,7 @@ Once the database is available, connect to the RDS instance from within your EKS
 kubectl run mysql-client --rm -it \
   --image=mysql:8.0 \
   --restart=Never \
-  -- mysql -h mydb3.cxojydmxwly6.us-east-1.rds.amazonaws.com -u mydbadmin -p
+  -- mysql -h mysql-rds-instance01.cxiawgqiyifz.ap-south-1.rds.amazonaws.com -u mydbadmin -p
 ````
 
 When prompted, enter the password:
@@ -164,7 +164,7 @@ metadata:
   name: catalog-mysql
 spec:
   type: ExternalName
-  externalName: mydb3.cxojydmxwly6.us-east-1.rds.amazonaws.com
+  externalName: mysql-rds-instance01.cxiawgqiyifz.ap-south-1.rds.amazonaws.com
   ports:
     - port: 3306
 ```
@@ -236,11 +236,11 @@ Run the following command:
 kubectl run mysql-client --rm -it \
   --image=mysql:8.0 \
   --restart=Never \
-  -- mysql -h mydb3.cxojydmxwly6.us-east-1.rds.amazonaws.com -u mydbadmin -p
+  -- mysql -h mysql-rds-instance01.cxiawgqiyifz.ap-south-1.rds.amazonaws.com -u mydbadmin -p
 ```
 
 - This command starts a **temporary Pod** named `mysql-client` using the official MySQL image.  
-- It connects directly to your **RDS endpoint** (`mydb3.cxojydmxwly6.us-east-1.rds.amazonaws.com`).  
+- It connects directly to your **RDS endpoint** (`mysql-rds-instance01.cxiawgqiyifz.ap-south-1.rds.amazonaws.com`).  
 - The flag `-u mydbadmin -p` will **prompt you to enter the database password** (`kalyandb101`).  
 - The Pod will be automatically deleted after you exit (`--rm`).
 
@@ -276,7 +276,7 @@ kubectl delete -f 02_catalog_k8s_manifests
 ```
 
 ### **Step-07-02: Delete RDS Instance**
-1. From the AWS Console → **RDS → Databases → mydb3** → Delete.
+1. From the AWS Console → **RDS → Databases → mysql-rds-instance01** → Delete.
 2. From the AWS Console → **RDS → Subnet groups → rds-private-subnets** → Delete.
 
 ---
