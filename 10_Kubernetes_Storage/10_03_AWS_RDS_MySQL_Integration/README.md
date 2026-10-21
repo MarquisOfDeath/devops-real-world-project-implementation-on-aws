@@ -46,10 +46,10 @@ aws eks describe-cluster \
 Example output:
 
 ```
-sg-092ff60d65289df59
+sg-0a110867467e27294
 ```
 
-This Security Group (`sg-092ff60d65289df59` in the example) belongs to your EKS cluster and can safely be used as the **source** for your RDS inbound rules.
+This Security Group (`sg-0a110867467e27294` in the example) belongs to your EKS cluster and can safely be used as the **source** for your RDS inbound rules.
 
 ---
 
@@ -63,7 +63,7 @@ This Security Group (`sg-092ff60d65289df59` in the example) belongs to your EKS 
 
     * **Type:** MySQL/Aurora (3306)
     * **Protocol:** TCP
-    * **Source:** *EKS Cluster Security Group ID* (e.g., `sg-092ff60d65289df59`)
+    * **Source:** *EKS Cluster Security Group ID* (e.g., `sg-0a110867467e27294`)
   * **Alternative (lab-only):**
 
     * **Type:** MySQL/Aurora (3306)
