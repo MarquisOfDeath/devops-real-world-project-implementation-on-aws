@@ -4,6 +4,6 @@ metadata:
   name: catalog-mysql
 spec:
   type: ExternalName
-  externalName: mydb101.cxojydmxwly6.us-east-1.rds.amazonaws.com
+  externalName: mysql-rds-instance01.cxiawgqiyifz.ap-south-1.rds.amazonaws.com
   ports:
-    - port: 3306
+  - port: 3306
