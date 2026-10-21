@@ -143,10 +143,8 @@ helm repo update
 
 ```bash
 # Get VPC ID
-VPC_ID=$(aws eks describe-cluster \
-  --name ${EKS_CLUSTER_NAME} \
-  --query "cluster.resourcesVpcConfig.vpcId" \
-  --output text)
+VPC_ID=$(aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --query "cluster.resourcesVpcConfig.vpcId" --output text)
+
 
 # Verify VPC ID
 echo $VPC_ID
