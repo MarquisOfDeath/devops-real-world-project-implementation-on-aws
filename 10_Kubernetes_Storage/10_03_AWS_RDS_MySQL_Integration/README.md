@@ -38,7 +38,7 @@ Run the following command to find your **EKS Cluster Security Group ID**:
 
 ```bash
 aws eks describe-cluster \
-  --name retail-dev-eksdemo1 \
+  --name retail-dev-marquiseksluster \
   --query "cluster.resourcesVpcConfig.clusterSecurityGroupId" \
   --output text
 ```
