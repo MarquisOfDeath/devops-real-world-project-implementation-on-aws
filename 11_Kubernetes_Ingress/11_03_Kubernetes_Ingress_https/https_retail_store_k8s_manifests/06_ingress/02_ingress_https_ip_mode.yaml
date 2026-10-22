@@ -10,9 +10,9 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     # Health Check Settings
-    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP 
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
-    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health/readiness    
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health/readiness
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
     alb.ingress.kubernetes.io/success-codes: '200'
@@ -20,15 +20,13 @@ metadata:
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
     ## SSL Settings
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:180789647333:certificate/60a5bccd-5cb1-426a-b792-4d6d6c459edf
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:478416475193:certificate/b2f2572d-a120-4820-b965-7fc22ced681b
     # SSL Redirect Setting
-    alb.ingress.kubernetes.io/ssl-redirect: '443'        
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
 spec:
-  ingressClassName: alb 
+  ingressClassName: alb
   defaultBackend:
     service:
       name: ui
       port:
-        number: 80                  
-      
-
+        number: 80
