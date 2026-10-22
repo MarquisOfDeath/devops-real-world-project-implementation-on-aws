@@ -63,7 +63,7 @@ After ALB is provisioned (check ADDRESS column):
 kubectl get ingress 
 ```
 
-In **Route53 → stacksimplify.com**, create **CNAME**:
+In **Route53 → themarquisofdeathmarvel.co.in**, create **A record with Alias**:
 
 ```
 
