@@ -72,11 +72,11 @@ secrets-provider-aws        	kube-system	1       	2026-10-19 12:41:07.147872 +05
 shaktiswarupmohanty@Shakti-MacBook-Air helm_basics % 
 
 # List Helm releases in YAML or JSON
-helm list --output=yaml
-helm list --output=json
+helm list -A --output=yaml
+helm list -A --output=json
 
 # List Helm releases for a specific namespace (if not using default)
-helm list -n default
+helm list -n <namespace>
 ```
 
 ---
@@ -120,7 +120,9 @@ http://localhost:30080
 > Tip: If the service name isn’t exactly `ui`, find it via label:
 >
 > ```bash
-> kubectl get svc -l app.kubernetes.io/instance=retail-store-ui n retail-app
+> shaktiswarupmohanty@Shakti-MacBook-Air helm_basics % kubectl get svc -l app.kubernetes.io/instance=retail-store-ui -n retail-app
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+retail-store-ui   ClusterIP   172.20.51.141   <none>        80/TCP    17m
 > ```
 
 ---
@@ -128,9 +130,9 @@ http://localhost:30080
 ## Step-06: Upgrade Retail UI Release
 - [Retail UI - Documentation](https://github.com/stacksimplify/retail-store-sample-app-aws/tree/main/src/ui)
 ```bash
-# Upgrade to a new chart version (1.2.4) and change app theme (example)
-helm upgrade ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart \
-  --version 1.2.4 \
+# Upgrade to a new chart version (1.6.2) and change app theme (example)
+helm upgrade retail-store-ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart \
+  --version 1.6.2 \
   --set app.theme=orange -n retail-app
 
 
@@ -141,7 +143,7 @@ helm history retail-store-ui -n retail-app
 kubectl get pods -n retail-app -w
 
 # (If service is ClusterIP) Port-forward again to access the app
-kubectl port-forward svc/ui 30080:80 -n retail-app &
+kubectl port-forward svc/retail-store-ui 30080:80 -n retail-app &
 # Then browse:
 # http://localhost:30080
 ```
@@ -154,13 +156,13 @@ To verify which values are in effect and what Kubernetes resources were created:
 
 ```bash
 # Print only overridden values
-helm get values ui -n retail-app
+helm get values retail-store-ui -n retail-app
 
 # Print all values (defaults + overrides)
-helm get values ui -n retail-app --all
+helm get values retail-store-ui -n retail-app --all
 
 # Print rendered Kubernetes manifests (Deployment, Service, etc.)
-helm get manifest ui -n retail-app
+helm get manifest retail-store-ui -n retail-app
 ```
 
 ---
@@ -180,7 +182,7 @@ helm history retail-store-ui -n retail-app
 kubectl get pods -n retail-app -w
 
 # (If service is ClusterIP) Port-forward to access the application
-kubectl port-forward svc/ui 30080:80 -n retail-app &
+kubectl port-forward svc/retail-store-ui 30080:80 -n retail-app &
 # http://localhost:30080
 ```
 
@@ -209,13 +211,13 @@ helm upgrade retail-store-ui oci://public.ecr.aws/aws-containers/retail-store-sa
   --set app.theme=green -n retail-app
 
 # If pods don't restart automatically, trigger a rollout:
-kubectl rollout restart deployment/ui -n retail-app
+kubectl rollout restart deployment/retail-store-ui -n retail-app
 
 # Verify pods
 kubectl get pods -n retail-app
 
 # (If service is ClusterIP) Port-forward to access the app
-kubectl port-forward svc/ui 30080:80 -n retail-app &
+kubectl port-forward svc/retail-store-ui 30080:80 -n retail-app &
 # http://localhost:30080
 ```
 
