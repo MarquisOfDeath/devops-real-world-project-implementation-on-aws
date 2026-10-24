@@ -123,50 +123,51 @@ echo $REGION
 echo $ACCOUNT_ID
 echo $REGISTRY
 
-Step 1: Open the Correct Directory
-Navigate to your working directory where your local ui chart folder is located.
+# Step 1: Open the Correct Directory
+## Navigate to your working directory where your local ui chart folder is located.
 cd /Users/shaktiswarupmohanty/Documents/k8s_helm/helm_package_and_publish/charts
-Step 2: Create the Private ECR Repository
-Run this AWS CLI command to provision the blank repository inside the Mumbai (ap-south-1) region.
+
+# Step 2: Create the Private ECR Repository
+## Run this AWS CLI command to provision the blank repository inside the Mumbai (ap-south-1) region.
 aws ecr create-repository \
     --repository-name retail-store-sample-ui-chart \
     --region ap-south-1
 
-Step 3: Authenticate the Helm CLI to AWS ECR
-Generate a temporary container registry authorization token via AWS CLI and pass it into the standard Helm login registry engine.
+# Step 3: Authenticate the Helm CLI to AWS ECR
+## Generate a temporary container registry authorization token via AWS CLI and pass it into the standard Helm login registry engine.
 aws ecr get-login-password --region ap-south-1 | helm registry login --username AWS --password-stdin 478416475193.dkr.ecr.ap-south-1.amazonaws.com
-Expected Output: Login Succeeded
+### Expected Output: Login Succeeded
 
-Step 4: Package your Local Chart into an Archive
-Compile the directory components of your ui chart into a compressed OCI-compliant tarball distribution package.
+# Step 4: Package your Local Chart into an Archive
+## Compile the directory components of your ui chart into a compressed OCI-compliant tarball distribution package.
 helm package ui
-Note: This command reads your Chart.yaml file to determine the chart version. Assuming your version is 2.0.0, it will generate a file named "retail-store-sample-ui-chart-2.0.0.tgz" right inside your current directory.
+### Note: This command reads your Chart.yaml file to determine the chart version. Assuming your version is 2.0.0, it will generate a file named "retail-store-sample-ui-chart-2.0.0.tgz" right inside your current directory.
 
-Step 5: Upload the Compressed Archive to ECR
-Push the compiled archive to your newly built container registry backend using the exact OCI target location layout.
+# Step 5: Upload the Compressed Archive to ECR
+## Push the compiled archive to your newly built container registry backend using the exact OCI target location layout.
 helm push retail-store-sample-ui-chart-2.0.0.tgz oci://478416475193.dkr.ecr.ap-south-1.amazonaws.com
 
-oci url format: oci://[AWS-Account-ID].dkr.ecr.[AWS-Region].amazonaws.com
+### oci url format: oci://[AWS-Account-ID].dkr.ecr.[AWS-Region].amazonaws.com
 
-
+=========================
 
 🔍 Verification Procedures
-Test A: Query AWS ECR to confirm the artifact exists
-Run this validation lookup to verify that Amazon ECR has successfully received and indexed the Helm chart artifact layout.
+
+# Test A: Query AWS ECR to confirm the artifact exists
+## Run this validation lookup to verify that Amazon ECR has successfully received and indexed the Helm chart artifact layout.
 
 aws ecr describe-images \
     --repository-name retail-store-sample-ui-chart \
     --region ap-south-1 --query 'imageDetails[].imageTags'
 
-Look for an output block showing the structural artifact details, confirming the metadata upload was successful.
+### Look for an output block showing the structural artifact details, confirming the metadata upload was successful.
 
-Test B: Fetch the chart remotely to verify readability
-Move out of your active directory space completely and pull the uploaded package from the registry to confirm it can be cleanly used for deployments.
-# Shift context to a temporary directory space
+# Test B: Fetch the chart remotely to verify readability
+## Move out of your active directory space completely and pull the uploaded package from the registry to confirm it can be cleanly used for deployments.
+### Shift context to a temporary directory space
 cd /tmp
-# Pull and extract the remote package using the explicit repository link
+### Pull and extract the remote package using the explicit repository link
 helm pull oci://478416475193.dkr.ecr.ap-south-1.amazonaws.com --version 2.0.0 --untar
-
 
 
 ```
