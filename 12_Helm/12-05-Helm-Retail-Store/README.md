@@ -15,6 +15,8 @@ cd retailstore-charts
 
 Or,
 
+cd retailstore-charts/charts/
+
 helm pull oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart \
   --version 1.6.3 \
   --untar
