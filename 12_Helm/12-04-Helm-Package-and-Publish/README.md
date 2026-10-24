@@ -23,7 +23,7 @@ mkdir -p charts && cd charts
 
 # Pull the UI chart from ECR Public (OCI) and unpack it
 helm pull oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart \
-  --version 1.3.0 \
+  --version 1.6.3 \
   --untar
 
 # Inspect what got created
@@ -51,7 +51,7 @@ apiVersion: v2
 name: retail-store-sample-ui-chart
 description: Retail Store UI Helm Chart
 type: application
-version: 1.3.1       # Chart version (bump from 1.3.0 to 1.3.1)
+version: 2.0.0       # Chart version (bump from 1.6.3 to 2.0.0)
 ```
 
 * Always bump `version` when releasing a new chart.
@@ -102,37 +102,73 @@ releaseInfo:
 3. helm push
 
 ```bash
+
+🔍 Why the OCI URL syntax looks specific (oci://...)
+When Helm interacts with container registries like Amazon ECR, it uses the Open Container Initiative (OCI) standard. Under this protocol:
+1. oci:// is the schema prefix: Just like http:// or ftp:// tells your browser how to talk to a server, oci:// tells the Helm CLI to stop looking for a traditional Helm Chart Repository index file and instead treat the destination like a Docker registry.
+2. The Registry Endpoint Structure: The base domain layout for a private AWS ECR registry is formatted as [AWS-Account-ID].dkr.ecr.[AWS-Region].amazonaws.com.
+3. The Target Repository Path: To push an OCI artifact, you must target the specific repository namespace.
+For your setup, the exact, fully qualified OCI URL for your repository is:
+oci://://amazonaws.com
+When running helm push, the tool evaluates the package name and version inside your chart archive and automatically pushes the artifact straight into that exact repository path.
+
+=========================
+
 # Set Variables
-REGION=us-east-1
+REGION=ap-south-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REGISTRY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
-
 # Verify Variables
 echo $REGION
 echo $ACCOUNT_ID
 echo $REGISTRY
 
-# Login to ECR for Helm/OCI
-aws ecr get-login-password --region "$REGION" \
-| helm registry login -u AWS --password-stdin "$REGISTRY"
-
-# Create flat repo (exactly chart name)
+Step 1: Open the Correct Directory
+Navigate to your working directory where your local ui chart folder is located.
+cd /Users/shaktiswarupmohanty/Documents/k8s_helm/helm_package_and_publish/charts
+Step 2: Create the Private ECR Repository
+Run this AWS CLI command to provision the blank repository inside the Mumbai (ap-south-1) region.
 aws ecr create-repository \
-  --repository-name retail-store-sample-ui-chart \
-  --region "$REGION" || true
+    --repository-name retail-store-sample-ui-chart \
+    --region ap-south-1
 
-# Package chart (matches Chart.yaml)
-cd charts
-helm package ./ui   # -> retail-store-sample-ui-chart-1.3.1.tgz
+Step 3: Authenticate the Helm CLI to AWS ECR
+Generate a temporary container registry authorization token via AWS CLI and pass it into the standard Helm login registry engine.
+aws ecr get-login-password --region ap-south-1 | helm registry login --username AWS --password-stdin 478416475193.dkr.ecr.ap-south-1.amazonaws.com
+Expected Output: Login Succeeded
 
-# Push to ECR (OCI): IMPORTANT: push to registry root (no suffix) ---
-helm push retail-store-sample-ui-chart-1.3.1.tgz oci://"$REGISTRY"
+Step 4: Package your Local Chart into an Archive
+Compile the directory components of your ui chart into a compressed OCI-compliant tarball distribution package.
+helm package ui
+Note: This command reads your Chart.yaml file to determine the chart version. Assuming your version is 2.0.0, it will generate a file named "retail-store-sample-ui-chart-2.0.0.tgz" right inside your current directory.
 
-# Verify
+Step 5: Upload the Compressed Archive to ECR
+Push the compiled archive to your newly built container registry backend using the exact OCI target location layout.
+helm push retail-store-sample-ui-chart-2.0.0.tgz oci://478416475193.dkr.ecr.ap-south-1.amazonaws.com
+
+oci url format: oci://[AWS-Account-ID].dkr.ecr.[AWS-Region].amazonaws.com
+
+
+
+🔍 Verification Procedures
+Test A: Query AWS ECR to confirm the artifact exists
+Run this validation lookup to verify that Amazon ECR has successfully received and indexed the Helm chart artifact layout.
+
 aws ecr describe-images \
-  --repository-name retail-store-sample-ui-chart \
-  --region "$REGION" \
-  --query 'imageDetails[].imageTags'
+    --repository-name retail-store-sample-ui-chart \
+    --region ap-south-1 --query 'imageDetails[].imageTags'
+
+Look for an output block showing the structural artifact details, confirming the metadata upload was successful.
+
+Test B: Fetch the chart remotely to verify readability
+Move out of your active directory space completely and pull the uploaded package from the registry to confirm it can be cleanly used for deployments.
+# Shift context to a temporary directory space
+cd /tmp
+# Pull and extract the remote package using the explicit repository link
+helm pull oci://478416475193.dkr.ecr.ap-south-1.amazonaws.com --version 2.0.0 --untar
+
+
+
 ```
 
 ---
@@ -143,7 +179,7 @@ aws ecr describe-images \
 # helm install
 helm install retail-ui \
   oci://"$REGISTRY"/retail-store-sample-ui-chart \
-  --version 1.3.1 \
+  --version 2.0.0 \
   -f ../retailstore-apps/values-ui.yaml
 ```
 
@@ -153,7 +189,7 @@ Or for upgrades:
 # helm upgrade
 helm upgrade --install retail-ui \
   oci://"$REGISTRY"/retail-store-sample-ui-chart \
-  --version 1.2.5 \
+  --version 2.0.0 \
   -f ../retailstore-apps/values-ui.yaml
 ```
 
@@ -181,7 +217,7 @@ Example (`values-ui.yaml`):
 image:
   repository: public.ecr.aws/aws-containers/retail-store-sample-ui
   pullPolicy: IfNotPresent
-  tag: 1.3.0   
+  tag: 1.6.3   
 ```
 
 * [Docker Image: retail-store-sample-ui](https://gallery.ecr.aws/aws-containers/retail-store-sample-ui)
