@@ -13,6 +13,30 @@
 cd retailstore-charts
 ./download-and-untar-helm-charts.sh
 
+Or,
+
+helm pull oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart \
+  --version 1.6.3 \
+  --untar
+
+helm pull oci://public.ecr.aws/aws-containers/retail-store-sample-cart-chart \
+  --version 1.6.3 \
+  --untar
+
+helm pull oci://public.ecr.aws/aws-containers/retail-store-sample-checkout-chart \
+  --version 1.6.3 \
+  --untar
+
+helm pull oci://public.ecr.aws/aws-containers/retail-store-sample-orders-chart \
+  --version 1.6.3 \
+  --untar
+
+helm pull oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart \
+  --version 1.6.3 \
+  --untar
+
+#====================
+
 # Review all charts code
 ├── retail-store-sample-cart-chart
 │   ├── Chart.yaml
