@@ -1,0 +1,120 @@
+# =====================================================================
+# ArgoCD setup for the "ui" service (production)
+#
+# This ONE file has 2 objects (separated by ---):
+#   1. AppProject  -> security boundary: what this app is allowed to touch
+#   2. Application -> watches the Helm chart in GitHub and deploys it
+#
+# Apply with:  kubectl apply -f argocd-ui.yaml
+# Check with:  kubectl get application ui -n argocd
+#
+# Lines marked  # <-- CHECK  are the ones to review before applying.
+# =====================================================================
+
+---
+# ---------------------------------------------------------------------
+# 1. APPPROJECT
+# Restricts the app to ONE repo, ONE cluster and ONE namespace.
+# This is safer than using the "default" project, which allows anything.
+# ---------------------------------------------------------------------
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: retail-store
+  namespace: argocd
+spec:
+  description: Retail store microservices (production)
+
+  # Apps in this project may only read from this Git repo
+  sourceRepos:
+    - https://github.com/MarquisOfDeath/aws-devops-github-actions-ecr-argocd3.git
+
+  # Apps in this project may only deploy to this cluster + namespace
+  destinations:
+    - server: https://kubernetes.default.svc   # the cluster ArgoCD runs in
+      namespace: retail-store                  # <-- CHECK: target namespace
+
+  # Block cluster-wide resources, except Namespace
+  # (Namespace is needed for the CreateNamespace=true option below)
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+
+  # Warn in the UI if something exists in the namespace that is not in Git
+  orphanedResources:
+    warn: true
+
+---
+# ---------------------------------------------------------------------
+# 2. APPLICATION
+# Tells ArgoCD: "take the Helm chart from this repo/path and keep it
+# deployed in this namespace".
+# ---------------------------------------------------------------------
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ui
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: ui
+    app.kubernetes.io/part-of: retail-store
+    env: prod
+  # If this Application is deleted, also delete everything it deployed.
+  # Remove this line if you want workloads to survive its deletion.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: retail-store            # must match the AppProject name above
+
+  # WHERE the Helm chart lives
+  source:
+    repoURL: https://github.com/MarquisOfDeath/aws-devops-github-actions-ecr-argocd3.git
+    targetRevision: main           # branch to track (pin a tag/commit for stricter control)
+    path: src/ui/chart             # folder that contains Chart.yaml
+    helm:
+      releaseName: ui
+      valueFiles:
+        - values-ui.yaml           # relative to "path". CI updates image.tag in this file
+      ignoreMissingValueFiles: false   # fail loudly if the values file is missing
+
+  # WHERE to deploy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: retail-store        # <-- CHECK: same namespace as in the AppProject
+
+  # HOW to sync
+  syncPolicy:
+    automated:
+      prune: true                  # delete resources that were removed from Git
+      selfHeal: true               # undo manual changes made directly in the cluster
+      allowEmpty: false            # never sync if the chart renders nothing (safety net)
+
+    syncOptions:
+      - CreateNamespace=true       # create the namespace if it does not exist
+      - ServerSideApply=true       # safer applies, avoids annotation size limits
+      - ApplyOutOfSyncOnly=true    # only touch resources that actually changed
+      - PruneLast=true             # delete old resources only after new ones are healthy
+
+    # Labels put on the namespace that ArgoCD creates
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: restricted   # <-- CHECK: use "baseline" if pods fail to start
+
+    # If a sync fails (e.g. temporary API error), retry with backoff
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Keep the last 10 syncs so you can roll back
+  revisionHistoryLimit: 10
+
+  # Only needed if the chart uses an HPA. Without it, selfHeal keeps
+  # resetting the replica count back to the value in Git.
+  # ignoreDifferences:
+  #   - group: apps
+  #     kind: Deployment
+  #     jsonPointers:
+  #       - /spec/replicas
